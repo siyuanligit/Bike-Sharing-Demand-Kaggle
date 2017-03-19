@@ -513,8 +513,6 @@ C Code:
 #include <R.h>
 #include <Rmath.h>
 
-// integer m, integer n, double X of length n, double Y of length n, double g of length m, double res of length m
-
 void nwkre (int *m, int *n, double *x, double *y, double *b, double *g, double *res)
 {
 	for(int i = 0; i < *m; i++)
