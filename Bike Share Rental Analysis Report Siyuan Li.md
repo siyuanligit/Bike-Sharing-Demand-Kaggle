@@ -145,7 +145,7 @@ We can clearly see from the matrix that hour and temperature has the strongest c
 
 **01 head() of data**
 
-![00_head](./plots/00_head.gif)
+![00](./plots/00_head.GIF)
 
 **02 Boxplot, Season v.s. Rental Count**
 
