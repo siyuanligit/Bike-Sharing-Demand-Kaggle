@@ -251,7 +251,7 @@ library(gam)
 library(reshape)
 
 ### loading data ###
-bike <- read.csv("./alternative_data/train.csv")
+bike <- read.csv("./data/train.csv")
 month <- as.integer(format(as.POSIXlt(bike.new$datetime), format = "%m"))
 weekday <- as.integer(format(as.POSIXlt(bike.new$datetime), format = "%u"))
 hour <- as.integer(format(as.POSIXlt(bike.new$datetime), format = "%H"))
