@@ -51,6 +51,7 @@ A preliminary data cleaning is performed, converting hourly date variable to mon
 
 ​There are no other abnormalities that is present in the dataset. The result of data cleaning is a dataset with 9573 observations and 11 variables. A `head()` function output **(Figure 01)** can give an idea how the data structures after cleaning.
 
+![00_head](./plots/00_head.GIF)
 
 
 #### 3 Exploratory Data Analysis
@@ -65,25 +66,41 @@ Using the summarized data frame, we can visualize some of the features of the da
 
 The boxplot of different seasons against bike rental count reveals that there is a seasonal trend with the rental count. Rental count is generally low in Winter and it peaks in Summer. Season can be one of the determining factors that affects bike rental count. **(Figure 02)**
 
+![01](./plots/01_bike_rentals_by_season.png)
+
 ​The line plot of hour of the day against bike rental count categorize by day of the week shows the difference of rental demand for weekday and weekend in different hours. The rental count remains active later in the midnight during the weekend than weekday. We can also see that the bike rental count has a dip at around 12 P.M. during weekdays, whereas around the same time during weekends shows peak of demand of the day. The peak of demand during weekdays is around 4 to 5 P.M. in the afternoon, possibly due to people are done working and in need of transportation to go home. **(Figure 03)**
+
+![02](./plots/02_bike_rentals_by_weekday_and_hour.png)
 
 Making a boxplot comparing holiday effects shows that the average amounts of rental are about the same regardless of being a holiday or not. Due to having a smaller sample size for holidays, the range of rental count is generally smaller than that of non-holidays. We can also see similar seasonality to the season v.s. rental count boxplot; Winter shows the lowest in rental count and Summer shows the highest. **(Figure 04)**
 
+![03](./plots/03_bike_rentals_by_holiday_and_season.png)
+
 Plotting different type of weather against bike rental count indicates that the demand of bike rental is about the same in clear, cloudy or misty hours, with better overall count in better weather. Rainy and snowy days show significantly lower average rental count. I believe our dataset do not contain observations in really bad weathers so the boxplot for weather type 4 is a placeholder and do not have significant meaning. **(Figure 05)**
+
+![04](./plots/04_bike_rentals_by_weather.png)
 
 I also plot temperature, humidity, and wind speed against bike rental count categorized by different weather types. 
 
 The temperature plot shows that generally, the warmer the temperature, the higher bike rental demand. However, in clear, cloudy, light rain or snow days, the rental count peaks at around 32 degrees Celsius; where as misty days, the rental demand peaks higher around 36 degrees Celsius. **(Figure 06)**
 
+![05](./plots/05_bike_rentals_by_temperature_and_weather.png)
+
 The humidity plot shows that generally, the higher the relative humidity, the lower bike rental demand. Although the curve for light rain or snow shows concavity, it is due to the smoothing of the data point by the ggplot function in R. **(Figure 07)**
 
+![06](./plots/06_bike_rentals_by_humidity_and_weather.png)
+
 The wind speed plot shows that although people enjoy gentle breeze in good weathers, the bike rental demand is significantly lower no matter the wind speed in light rain or snow weathers. **(Figure 08)**
+
+![07](./plots/07_bike_rentals_by_windspeed_and_weather.png)
 
 From the previous plots, observe that there might be high correlations between different variables, namely, season and month, season and weather type, etc.. 
 
 ##### 3.2 Correlation
 
 By preparing a correlation matrix, we can have a more straight forward view of what variables are strongly correlated and what is weakly correlated. **(Figure 09)**
+
+![001](./plots/00_correlation_matrix.png)
 
 We can clearly see from the matrix that hour and temperature has the strongest correlation to bike rental count while all variables considered. However, hour and temperature has a relatively high correlation between each other. We can disregard the significantly high correlation between season and month since it is only natural for them to have high correlation.
 
@@ -95,7 +112,11 @@ Using C, I am able to build a function that efficiently calculate kernel regress
 
 The kernel regression plot of hour of the day against bike rental count **(Figure 10)** shows relatively higher rental count around 8 A.M. and 4 to 5 P.M. which correspond to the time people get to work and get off work. We also see a slightly higher count around 12 to 1 P.M. at noon, which corresponds to the time people having lunch break.
 
+![09](./plots/02_hr_cnt_gs.png)
+
 The kernel regression plot of temperature against bike rental count **(Figure 11)** shows a relatively higher rental count at around 34 degrees Celsius, however, most number of counts occurs around 18 to 33 degrees Celsius, which is understandably a more comfortable range of temperature.
+
+![10](./plots/05_tem_cnt_gs.png)
 
 ##### 3.4 Conclusions on Exploratory Data Analysis
 
@@ -115,9 +136,13 @@ The resulting training set contains 7179 observations and testing set contains 2
 
 I start out by building a simple linear model, pitting all the numerical variables against the response, that is, discarding the Boolean expression of weekday and holiday from the model. Removing insignificant predictor variables using the `step()` function, the resulting simple linear regression model has month, hour, temperature and humidity as its predictor variable. The simple linear regression model only achieved 0.3389 adjusted R-squared, which indicate a weak fit. This is ok since I only included this simple linear model to see how much variation in the response can numerical variables explain. And it turns out not much. **(Figure 12)**
 
+![11](./plots/08_lm.GIF)
+
 ##### 4.4 Generalized Linear Model
 
 Next, I construct a generalized linear model and try to include all the predictor variables into consideration. I transformed season, month, day of the week, and hour of the day into factors because these variables are only going to be integers and they are only going to be these values. Categorizing these values into factors will provide high accuracy in model building. After removing insignificant predictor variables from the model the generalized linear model achieved an R-squared of 0.6425. This is considered as a relatively good fit. **(Figure 13)**
+
+![12](./plots/09_glm.GIF)
 
 ##### 4.5 Generalized Addictive Model
 
@@ -125,9 +150,15 @@ Generalized addictive model is a great method that it not only incorporates and 
 
 I begin experimenting with generalized addictive model by first fitting the response variable "count" against all predictor variables, treating date time variables as categories. After removing insignificant predictor variables, the GAM yields an R-squared of 0.6429, which is only slightly better than generalized linear model. **(Figure 14)**
 
+![13](./plots/10_gam1.GIF)
+
 I then try and add spline smooth functions on the three weather variables, namely "temperature", "humidity" and "wind speed." After removing insignificant predictor variables, the new GAM yields an R-squared of 0.6491, which is slightly better than previous GAM. **(Figure 15)**
 
+![14](./plots/11_gam2.GIF)
+
 Furthermore, on top of the spline smoothing function, I then add different smoothing degrees of freedom for "temperature", "humidity" and "wind speed." I would like to split the range of each of these variable's range into segments of 10, forcing the spline smoothing function to calculate piecewise smoothing, allowing the smoothing to better fit the data. The resulting GAM has an R-squared of 0.6505. **(Figure 16)**
+
+![15](./plots/12_gam3.GIF)
 
 We can obviously go further by spline smoothing these variables using pieces of range 1, but I would like to jump to prediction with what I have now.
 
@@ -137,13 +168,19 @@ We can obviously go further by spline smoothing these variables using pieces of 
 
 Predicting using the attributes from testing dataset and plot them against the true values **(Figure 17)** shows that the simple linear model is limited and cannot explain most of the variation in the response variable. 
 
+![16](./plots/13_lm_predict.png)
+
 ##### 4.2 Generalized Linear Model
 
 Predicting using the attributes from testing dataset and plot them against the true values **(Figure 18)** shows that the generalized linear model is significantly more accurate in predicting the variations in the response variable.
 
+![17](./plots/14_glm_predict.png)
+
 ##### 4.3 Generalized Addictive Model
 
 Here, I only used the third generalized addictive model in predicting. The plot **(Figure 19)** shows that the spread of the response variables is similar to generalized linear model. This is understandable since the goodness of fit only improved by about 1%.
+
+![18](./plots/15_gam3_predict.png)
 
 It is important to note that none of the statistical models has predicted the trend of the bike sharing rental count. This is due to the fact that the dataset does not contain relative predictor variables that can explain the seasonality, plus, I cannot simply transform the dataset and remove the trend without proper information allowing me to.
 
@@ -156,88 +193,7 @@ Through exploratory analysis on the data about bike sharing rental counts, we di
 There are many other predictive modelling methods I can employ, like time series etc. I can even use more advance data science tools like xgboost to build better models in predicting the bike sharing rental count. Due to the time limit of this course project, I only utilized the methods I have learned this quarter. Given enough time and resource, I may be able to construct better statistical models which more accurately explains the variations caused by different variables.
 
 
-
-
-
 #### Appendices
-
-##### Figures：
-
-**01 head() of data**
-
-![00_head](./plots/00_head.GIF)
-
-**02 Boxplot, Season v.s. Rental Count**
-
-![01](./plots/01_bike_rentals_by_season.png)
-
-**03 Line plot, Hour of the Day, by Day of the Week v.s. Rental Count**
-
-![02](./plots/02_bike_rentals_by_weekday_and_hour.png)
-
-**04 Boxplot, Holiday, by Season v.s. Rental Count**
-
-![03](./plots/03_bike_rentals_by_holiday_and_season.png)
-
-**05 Boxplot, Type of Weather v.s. Rental Count**
-
-![04](./plots/04_bike_rentals_by_weather.png)
-
-**06 Line plot, Temperature, by type of weather v.s. Rental Count**
-
-![05](./plots/05_bike_rentals_by_temperature_and_weather.png)
-
-**07 Line plot, Humidity, by type of weather v.s. Rental Count**
-
-![06](./plots/06_bike_rentals_by_humidity_and_weather.png)
-
-**08 Line plot, Wind Speed, by type of weather v.s. Rental Count**
-
-![07](./plots/07_bike_rentals_by_windspeed_and_weather.png)
-
-**09 Correlation Matrix**
-
-![001](./plots/00_correlation_matrix.png)
-
-**10**
-
-![09](./plots/02_hr_cnt_gs.png)
-
-**11**
-
-![10](./plots/05_tem_cnt_gs.png)
-
-**12 Simple Linear Regression**
-
-![11](./plots/08_lm.GIF)
-
-**13 Generalized Linear Model**
-
-![12](./plots/09_glm.GIF)
-
-**14 Generalized Addictive Model 1**
-
-![13](./plots/10_gam1.GIF)
-
-**15 Generalized Addictive Model 2**
-
-![14](./plots/11_gam2.GIF)
-
-**16 Generalized Addictive Model 3**
-
-![15](./plots/12_gam3.GIF)
-
-**17 Prediction on Test Data using Simple Linear Model**
-
-![16](./plots/13_lm_predict.png)
-
-**18 Prediction on Test Data using Generalized Linear Model**
-
-![17](./plots/14_glm_predict.png)
-
-**19 Prediction on Test Data using Generalized Addictive Model with Smoothing Spline with df**
-
-![18](./plots/15_gam3_predict.png)
 
 ##### Code
 
