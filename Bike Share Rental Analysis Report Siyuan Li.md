@@ -8,7 +8,7 @@
 
 Ride sharing companies like Uber and Lyft are great business models that provide convenient, affordable and efficient transportation options for customers who want to go to places without the hassle of owning or operating a vehicle. However, with the increasing number of automobiles, riding sharing in cars are not efficient enough especially in crowded and busy areas like cities' downtown. Therefore, bike sharing is a brilliant idea which provides people with another short range transportation option that allows them to travel without worrying about being stuck in traffic and maybe enjoy city view or even workout at the same. In fact, bike sharing programs in the United States started about 15 years before Uber's ride share program started. 
 
-In this project for the UCLA's "Statistics 404 Statistical Computation and Programming" course, I will be investigating into the bike share rental data from "Capital Bikeshare" servicing Washington D.C. and surrounding areas beginning 2010. Capital Bikeshare was the largest bike sharing service in the United States when they started until Citi Bike for New York City started operations in 2013. Capital Bikeshare started from 10 stations and 120 bicycles in Washington D.C. and expanding into a bike share system that owns more than 429 stations and 2500 bicycles and also services Arlington County, Fairfax County, City of Alexandria in Virginia and Montgomery County in Maryland. 
+In this project for the UCLA's "Statistics 404 Statistical Computation and Programming" course, I will be investigating into the bike share rental data from "Capital Bikeshare" servicing Washington D.C. and surrounding areas beginning 2010. Capital Bikeshare was the largest bike sharing service in the United States when they started, until Citi Bike for New York City started operations in 2013. Capital Bikeshare started from 10 stations and 120 bicycles in Washington D.C. and expanding into a bike share system that owns more than 429 stations and 2500 bicycles and also services Arlington County, Fairfax County, City of Alexandria in Virginia and Montgomery County in Maryland. 
 
 My objective of the analysis is to find out the determining factor that drives the demand on bike share rentals, construct statistical models and then try to make prediction on rentals based on the information and models I have. My exploration and the analysis of the data will be performed in R, with a few functions written in C, as per requested.
 
@@ -40,6 +40,8 @@ The variables are:
 - "casual", containing the count of non-registered user rentals, across all stations;
 - "registered", containing the count of registered user rentals, across all stations;
 - "count", containing the total count of rentals at the given hour, across all stations.
+
+"count" will be used as response variable here, and all other as predictor.
 
 ##### 2.1 Data Cleaning
 
@@ -87,65 +89,83 @@ We can clearly see from the matrix that hour and temperature has the strongest c
 
 ##### 3.3 Kernel Regression
 
+Kernel regression is a great way to find out non-linear relationships between variables; bootstrapping and calculating confidence intervals are also great ways to give insight to how confident are our non-linear estimations. Before actually building any models that assembles all the predictor variables, I would like to see the relationship of the strongest predictor variable against the response variable "count." 
 
+Using C, I am able to build a function that efficiently calculate kernel regression with the input of a predictor and a response. The kernel regression utilizes a Gaussian kernel, and bandwidth chose by the rule of thumb proposed by Scott, D. W., providing a smooth estimation. 
+
+The kernel regression plot of hour of the day against bike rental count **(Figure 10)** shows relatively higher rental count around 8 A.M. and 4 to 5 P.M. which correspond to the time people get to work and get off work. We also see a slightly higher count around 12 to 1 P.M. at noon, which corresponds to the time people having lunch break.
+
+The kernel regression plot of temperature against bike rental count **(Figure 11)** shows a relatively higher rental count at around 34 degrees Celsius, however, most number of counts occurs around 18 to 33 degrees Celsius, which is understandably a more comfortable range of temperature.
+
+##### 3.4 Conclusions on Exploratory Data Analysis
+
+From the initial data exploration, we can clearly see that hour of the day and temperature are the strongest factors that determines the bike share rental demand. 
 
 
 
 #### 4 Model Building 
 
-##### 4.1 Linear Model
+##### 4.1 Data Preparation
 
+Before diving into building statistical models, I partition my dataset into two sets, training and testing. Training set will be used to train statistical models and estimate coefficients, while testing set will be used to validate the model we build with the training set. 75% of the complete data is partitioned into training set, sampled uniformly without replacement, and 25% is partitioned in to testing set. Sampling without replacement enables the model we build to extrapolate on the testing data, giving us a better sense of how our statistical models perform. 
 
+The resulting training set contains 7179 observations and testing set contains 2394 observations.
 
-##### 4.2 Generalized Linear Model
+##### 4.3 Linear Regression Model
 
-4.2.1 Poisson Count Statistics
+I start out by building a simple linear model, pitting all the numerical variables against the response, that is, discarding the Boolean expression of weekday and holiday from the model. Removing insignificant predictor variables using the `step()` function, the resulting simple linear regression model has month, hour, temperature and humidity as its predictor variable. The simple linear regression model only achieved 0.3389 adjusted R-squared, which indicate a weak fit. This is ok since I only included this simple linear model to see how much variation in the response can numerical variables explain. And it turns out not much. **(Figure 12)**
 
+##### 4.4 Generalized Linear Model
 
+Next, I construct a generalized linear model and try to include all the predictor variables into consideration. I transformed season, month, day of the week, and hour of the day into factors because these variables are only going to be integers and they are only going to be these values. Categorizing these values into factors will provide high accuracy in model building. After removing insignificant predictor variables from the model the generalized linear model achieved an R-squared of 0.6425. This is considered as a relatively good fit. **(Figure 13)**
 
-4.2.2 Generalized Linear Model
+##### 4.5 Generalized Addictive Model
 
+Generalized addictive model is a great method that it not only incorporates and smooth's parametric variables but also provide potentially better fit by inferring categorical variables with smooth functions. 
 
+I begin experimenting with generalized addictive model by first fitting the response variable "count" against all predictor variables, treating date time variables as categories. After removing insignificant predictor variables, the GAM yields an R-squared of 0.6429, which is only slightly better than generalized linear model. **(Figure 14)**
 
-##### 4.3 Generalized Addictive Model
+I then try and add spline smooth functions on the three weather variables, namely "temperature", "humidity" and "wind speed." After removing insignificant predictor variables, the new GAM yields an R-squared of 0.6491, which is slightly better than previous GAM. **(Figure 15)**
 
+Furthermore, on top of the spline smoothing function, I then add different smoothing degrees of freedom for "temperature", "humidity" and "wind speed." I would like to split the range of each of these variable's range into segments of 10, forcing the spline smoothing function to calculate piecewise smoothing, allowing the smoothing to better fit the data. The resulting GAM has an R-squared of 0.6505. **(Figure 16)**
 
-
-
+We can obviously go further by spline smoothing these variables using pieces of range 1, but I would like to jump to prediction with what I have now.
 
 #### 5 Prediction
 
 ##### 4.1 Linear Model
 
-
+Predicting using the attributes from testing dataset and plot them against the true values **(Figure 17)** shows that the simple linear model is limited and cannot explain most of the variation in the response variable. 
 
 ##### 4.2 Generalized Linear Model
 
-4.2.1 Poisson Count Statistics
-
-
-
-4.2.2 Generalized Linear Model
-
-
+Predicting using the attributes from testing dataset and plot them against the true values **(Figure 18)** shows that the generalized linear model is significantly more accurate in predicting the variations in the response variable.
 
 ##### 4.3 Generalized Addictive Model
 
+Here, I only used the third generalized addictive model in predicting. The plot **(Figure 19)** shows that the spread of the response variables is similar to generalized linear model. This is understandable since the goodness of fit only improved by about 1%.
 
+It is important to note that none of the statistical models has predicted the trend of the bike sharing rental count. This is due to the fact that the dataset does not contain relative predictor variables that can explain the seasonality, plus, I cannot simply transform the dataset and remove the trend without proper information allowing me to.
 
 
 
 #### 6 Conclusion
 
+Through exploratory analysis on the data about bike sharing rental counts, we discovered that hour of the day and temperature are the two most important factors that drives the demand of bike sharing rental. Using simple linear regression model, generalized linear model, and generalized addictive model, we successfully predict the bike sharing rental count with relatively high accuracy. 
+
+There are many other predictive modelling methods I can employ, like time series etc. I can even use more advance data science tools like xgboost to build better models in predicting the bike sharing rental count. Due to the time limit of this course project, I only utilized the methods I have learned this quarter. Given enough time and resource, I may be able to construct better statistical models which more accurately explains the variations caused by different variables.
+
+
+
 
 
 #### Appendices
 
-##### Figures
+##### Figures：
 
 **01 head() of data**
 
-![00_head](./plots/00_head.gif)
+![00_head](./plots/00_head.GIF)
 
 **02 Boxplot, Season v.s. Rental Count**
 
@@ -181,33 +201,43 @@ We can clearly see from the matrix that hour and temperature has the strongest c
 
 **10**
 
+![09](./plots/02_hr_cnt_gs.png)
 
+**11**
 
-11
+![10](./plots/05_tem_cnt_gs.png)
 
+**12 Simple Linear Regression**
 
+![11](./plots/08_lm.GIF)
 
-12
+**13 Generalized Linear Model**
 
+![12](./plots/09_glm.GIF)
 
+**14 Generalized Addictive Model 1**
 
-13
+![13](./plots/10_gam1.GIF)
 
+**15 Generalized Addictive Model 2**
 
+![14](./plots/11_gam2.GIF)
 
-14
+**16 Generalized Addictive Model 3**
 
+![15](./plots/12_gam3.GIF)
 
+**17 Prediction on Test Data using Simple Linear Model**
 
-15
+![16](./plots/13_lm_predict.png)
 
+**18 Prediction on Test Data using Generalized Linear Model**
 
+![17](./plots/14_glm_predict.png)
 
-16
+**19 Prediction on Test Data using Generalized Addictive Model with Smoothing Spline with df**
 
-
-
-
+![18](./plots/15_gam3_predict.png)
 
 ##### Code
 
@@ -519,76 +549,70 @@ legend("topright", c("97.5% Upper Bound","Kernel Regression","2.5% Lower Bound")
 dyn.unload("nwkre.dll")
 
 ### building models ###
-# linear model
-bike.lm <- lm(data = bike.new.train, count ~ hour + temperature + humidity + windspeed)
-summary(bike.lm)
+# partitioning data
+set.seed(1)
+sample.index <- sample(nrow(bike), 9573*0.75, replace = FALSE)
+bike.train <- bike[sample.index,]
+bike.test <- bike[-sample.index,]
 
-# generalized linear model, poisson count statistic
-bike.glm <- glm(data = bike.new.train, count ~ hour + temperature + humidity + windspeed, family = "poisson")
-summary(bike.glm)
-# R^2
-1-(915672/1357609)
+# linear regression
+bike.lm <- lm(data = bike.train, count ~ season + month + weekday + hour + temperature + humidity + windspeed)
+summary(bike.lm)
+bike.lm.step <- step(bike.lm)
+summary(bike.lm.step)
 
 # generalized linear model
-bike.glm2 <- glm(data = bike.new.train, count ~ hour + isweekday + isholiday + weathertype + temperature + humidity + windspeed)
+bike.glm2 <- glm(data = bike.train, count ~ as.factor(season) + as.factor(month) + as.factor(weekday) + as.factor(hour) + as.factor(isweekday) + 
+                   as.factor(isholiday) + as.factor(weathertype) + temperature + humidity + windspeed)
 summary(bike.glm2)
 bike.glm2.step <- step(bike.glm2)
-# R^2
-1-(187011168/271430390)
+summary(bike.glm2.step)
+1 - (86480856/241870829)
 
-# generalized additive model
-# no spline smoothing
-bike.gam1 <- gam(data = bike.new.train, count ~ hour + isweekday + isholiday + weathertype + temperature + humidity + windspeed)
+# gam1
+bike.gam1 <- gam(data = bike.train, count ~ as.factor(season) + as.factor(month) + as.factor(weekday) + as.factor(hour) + as.factor(isweekday) + 
+                   as.factor(isholiday) + as.factor(weathertype) + temperature + humidity + windspeed)
+summary(bike.gam1)
+1 - (86367987/241870829)
+bike.gam1.step <- gam(data = bike.train, count ~ as.factor(season) + as.factor(month) + as.factor(weekday) + as.factor(hour) + 
+                        + as.factor(weathertype) + temperature + humidity + windspeed)
+summary(bike.gam1.step)
+1 - (86371773/241870829)
 
-# with spline smoothing
-bike.gam2 <- gam(data = bike.new.train, count ~ s(hour) + isweekday + isholiday + weathertype + s(temperature) + s(humidity) + s(windspeed))
+# gam2
+bike.gam2 <- gam(data = bike.train, count ~ as.factor(season) + as.factor(month) + as.factor(weekday) + as.factor(hour) + as.factor(isweekday) + 
+                   as.factor(isholiday) + as.factor(weathertype) + s(temperature) + s(humidity) + s(windspeed))
+summary(bike.gam2)
+1 - (84860137/241870829)
+bike.gam2.step <- gam(data = bike.train, count ~ as.factor(season) + as.factor(month) + as.factor(weekday) + as.factor(hour) + as.factor(weathertype) + 
+                        s(temperature) + s(humidity) + s(windspeed))
+summary(bike.gam2.step)
+1 - (84870598/241870829)
 
-bike.gam3 <- gam(data = bike.new.train, count ~ s(hour, 28) + isweekday + isholiday + weathertype + s(temperature,28) + s(humidity) + s(windspeed))
+# gam3
+bike.gam3 <- gam(data = bike.train, count ~ as.factor(season) + as.factor(month) + as.factor(weekday) + as.factor(hour) + as.factor(isweekday) + 
+                   as.factor(isholiday) + as.factor(weathertype) + s(temperature, 4) + s(humidity, 10) + s(windspeed, 6))
+summary(bike.gam3)
+1 - (84534154/241870829)
+bike.gam3.step <- gam(data = bike.train, count ~ as.factor(season) + as.factor(month) + as.factor(weekday) + as.factor(hour) + as.factor(weathertype) + 
+                        s(temperature, 4) + s(humidity, 10) + s(windspeed, 6))
+summary(bike.gam3.step)
+1 - (84544911/241870829)
 
-bike.gam4 <- gam(data = bike.new.train, count ~ s(hour, 28)+isweekday+isholiday+weathertype+s(temperature,28)+s(humidity,28)+s(windspeed))
+anova(bike.gam1.step, bike.gam2.step, bike.gam3.step, test = "F")
 
-bike.gam5 <- gam(data = bike.new.train, count ~ s(hour, 340)+isweekday+isholiday+weathertype+s(temperature,340)+s(humidity,340)+s(windspeed, 340))
+### predictions ###
+# lm
+plot(bike.test$count, main = "Linear Model", ylab = "Test Set Rental Count", pch = 20)
+points(predict(bike.lm.step, newdata = bike.test), col = "red", pch = 20)
 
-# anova table
-anova(bike.gam1, bike.gam2, bike.gam3, bike.gam4, bike.gam5, test = "F")
+# glm
+plot(bike.test$count, main = "Generalized Linear Model", ylab = "Test Set Rental Count", pch = 20)
+points(predict(bike.glm2.step, newdata = bike.test), col = "red", pch = 20)
 
-# R^2
-1 - (186996335/271430390) #gam1
-1 - (183792697/271430390) #gam2
-1 - (171871824/271430390) #gam3
-1 - (170496890/271430390) #gam4
-1 - (154134185/271430390) #gam5
-
-par(mfrow = c(2,4))
-plot.gam(bike.gam1, se = TRUE, col = "yellow")
-par(mfrow = c(2,4))
-plot.gam(bike.gam2, se = TRUE, col = "green")
-par(mfrow = c(2,4))
-plot.gam(bike.gam3, se = TRUE, col = "red")
-par(mfrow = c(2,4))
-plot.gam(bike.gam4, se = TRUE, col = "blue")
-par(mfrow = c(2,4))
-plot.gam(bike.gam5, se = TRUE, col = "cyan")
-
-par(mfrow = c(1,3))
-plot(bike.new.test$count, main = "Linear Model", ylab = "Test Set Rental Count")
-points(predict(bike.lm, newdata = bike.new.test), col = "yellow")
-plot(bike.new.test$count, main = "Count Statistics", ylab = "Test Set Rental Count")
-points(predict(bike.glm, newdata = bike.new.test), col = "orange")
-plot(bike.new.test$count, main = "Generalized Linear Model", ylab = "Test Set Rental Count")
-points(predict(bike.glm2, newdata = bike.new.test), col = "red")
-
-par(mfrow = c(2,2))
-plot(bike.new.test$count, main = "GAM1", ylab = "Test Set Rental Count")
-points(predict(bike.gam1, newdata = bike.new.test), col = "yellow")
-plot(bike.new.test$count, main = "GAM2", ylab = "Test Set Rental Count")
-points(predict(bike.gam2, newdata = bike.new.test), col = "green")
-plot(bike.new.test$count, main = "GAM3", ylab = "Test Set Rental Count")
-points(predict(bike.gam3, newdata = bike.new.test), col = "red")
-plot(bike.new.test$count, main = "GAM4", ylab = "Test Set Rental Count")
-points(predict(bike.gam4, newdata = bike.new.test), col = "blue")
-plot(bike.new.test$count, main = "GAM5", ylab = "Test Set Rental Count")
-points(predict(bike.gam5, newdata = bike.new.test), col = "cyan")
+# gam3
+plot(bike.test$count, main = "GAM3", ylab = "Test Set Rental Count", pch = 20)
+points(predict(bike.gam3.step, newdata = bike.test), col = "red", pch = 20)
 ```
 
 C Code:
