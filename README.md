@@ -1,6 +1,6 @@
 # Academic-Project-404
 
-Academic Project for STAT 404 Statistical Computation and Programming, UCLA Mar, 19th 2017
+Academic Project for STAT 404 Statistical Computation and Programming, UCLA - Mar, 19th 2017
 
 To view the project, follow the link here:
 
