@@ -2,6 +2,8 @@ To view the report in standalone page, follow the link here:
 
 [Report](https://github.com/siyuanligit/Academic-Project-404/blob/master/Bike%20Share%20Rental%20Analysis%20Report%20Siyuan%20Li.md)
 
+[Project Website](https://siyuanligit.github.io/Bike-Sharing-Demand-Kaggle/)
+
 ***
 
 ### Bike Share Rental Analysis
